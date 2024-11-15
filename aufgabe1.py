@@ -95,7 +95,7 @@ class AStarSearch:
                     'heuristic': heuristic_output
                 }
 
-            # Explore neighbors
+            # Explore neighbours
             for neighbor, move_cost in self.connections[current_city].items():
                 tentative_g_cost = g_costs[current_city] + move_cost
 
