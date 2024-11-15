@@ -18,7 +18,7 @@ def load_problem(filename: str) -> tuple[ProblemDict, HeuristicDict]:
 def save_solution(filename: str, solution: SolutionDict) -> None:
     """Saves the A* solution to a YAML file in the required format."""
     with open(filename, 'w') as file:
-        yaml.dump({'solution': solution}, file)
+        yaml.safe_dump({'solution': solution}, file, sort_keys=False)
 
 
 class AStarSearch:
