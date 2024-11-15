@@ -2,7 +2,7 @@ import argparse
 import yaml
 import heapq
 
-# defined types for clarity
+# Defined types for clarity
 ProblemDict = dict[str, str | list[str] | dict[str, dict[str, float]]]
 HeuristicDict = dict[str, dict[str, float]]
 SolutionDict = dict[str, int | float | list[str] | dict[str, float]]
@@ -12,13 +12,24 @@ def load_problem(filename: str) -> tuple[ProblemDict, HeuristicDict]:
     """Loads the YAML file and returns the problem details and heuristic information."""
     with open(filename, 'r') as file:
         data = yaml.safe_load(file)
+
+    # Convert all cost values in connects_to to float
+    for details in data['problem'].values():
+        if isinstance(details, dict):
+            details['connects_to'] = {k: float(v) for k, v in details['connects_to'].items()}
+
+    # Convert all heuristic values to float
+    for heuristic_details in data['additional_information'].values():
+        heuristic_details['line_of_sight_distance'] = float(heuristic_details['line_of_sight_distance'])
+        heuristic_details['altitude_difference'] = float(heuristic_details['altitude_difference'])
+
     return data['problem'], data['additional_information']
 
 
 def save_solution(filename: str, solution: SolutionDict) -> None:
     """Saves the A* solution to a YAML file in the required format."""
     with open(filename, 'w') as file:
-        yaml.safe_dump({'solution': solution}, file, sort_keys=False)
+        yaml.safe_dump({'solution': solution}, file)
 
 
 class AStarSearch:
@@ -31,7 +42,7 @@ class AStarSearch:
         self.city_end: str = problem['city_end']
         self.connections: dict[str, dict[str, float]] = {
             city.removeprefix('city_'): details['connects_to'] for city, details in problem.items() if
-            city.startswith('city_') and city not in ['city_start', 'city_end']
+            isinstance(details, dict)
         }
 
     def heuristic(self, city: str, mode: str = 'no') -> float:
@@ -52,7 +63,7 @@ class AStarSearch:
                 info = self.heuristic_info[city]
                 line_of_sight_distance = info['line_of_sight_distance']
                 altitude_difference = info['altitude_difference']
-                return (line_of_sight_distance ** 2 + altitude_difference ** 2) ** 0.5
+                return (line_of_sight_distance ** 2 + altitude_difference ** 2) ** 0.5  # Euclidean distance
             case _:
                 raise ValueError(f"Invalid heuristic mode: {mode}")
 
@@ -60,17 +71,19 @@ class AStarSearch:
         """Runs the A* algorithm with the specified heuristic function."""
         heuristic_values: dict[str, float] = {city: self.heuristic(city, heuristic_mode) for city in self.cities}
         start, goal = self.city_start, self.city_end
-        # priority queue with (cost + heuristic, city)
+        # Priority queue with (cost + heuristic, city)
         frontier: list[tuple[float, str]] = [(heuristic_values[start], start)]
         explored: set[str] = set()
-        came_from: dict[str, str] = {}  # to reconstruct path
-        # currently known cost of the cheapest path from start to city, explored + frontier
+        came_from: dict[str, str] = {}  # To reconstruct path
+        # Currently known cost of the cheapest path from start to city, explored + frontier
         g_costs: dict[str, float] = {start: 0.}
 
         while frontier:
             current_cost, current_city = heapq.heappop(frontier)
+            explored.add(current_city)
+            # print(f'{current_cost, current_city = }\n{frontier = }\n{explored = }\n{g_costs = }\n')
 
-            # check if goal reached
+            # Check if goal reached
             if current_city == goal:
                 total_cost = g_costs[self.city_end]
                 path = self.reconstruct_path(came_from)
@@ -82,9 +95,7 @@ class AStarSearch:
                     'heuristic': heuristic_output
                 }
 
-            explored.add(current_city)
-
-            # explore neighbors
+            # Explore neighbors
             for neighbor, move_cost in self.connections[current_city].items():
                 tentative_g_cost = g_costs[current_city] + move_cost
 
@@ -94,9 +105,7 @@ class AStarSearch:
                     priority = tentative_g_cost + heuristic_values[neighbor]
                     heapq.heappush(frontier, (priority, neighbor))
 
-            # print(f'{current_cost, current_city = }\n{frontier = }\n{explored = }\n{g_costs = }\n')
-
-        # no solution found
+        # No solution found
         raise ValueError("No path found from start to goal.")
 
     def reconstruct_path(self, came_from: dict[str, str]) -> list[str]:
