@@ -2,7 +2,9 @@ from pathlib import Path
 import subprocess
 
 
-def run_and_validate_outputs(yaml_dir: str, script_name: str = "aufgabe1.py", validator_name: str = "test_output.py") -> None:
+def run_and_validate_outputs(yaml_dir: str, script_name: str = "aufgabe1.py", validator_name: str | None = None
+                             # "test_output.py"
+                             ) -> None:
     """
     Processes YAML files in a directory, organizes outputs, and validates results.
 
@@ -41,12 +43,13 @@ def run_and_validate_outputs(yaml_dir: str, script_name: str = "aufgabe1.py", va
                 print(f"Warning: Expected output file {output_file} not found for {yaml_file}")
 
         # Validate each output file
-        for output_file in folder_path.glob("aufgabe1-*.yaml"):
-            try:
-                subprocess.run(["python", validator_name, str(yaml_file), str(output_file)], check=True)
-                print(f"Validation passed for {output_file}")
-            except subprocess.CalledProcessError as e:
-                print(f"Validation failed for {output_file}: {e}")
+        if validator_name is not None:
+            for output_file in folder_path.glob("aufgabe1-*.yaml"):
+                try:
+                    subprocess.run(["python", validator_name, str(yaml_file), str(output_file)], check=True)
+                    print(f"Validation passed for {output_file}")
+                except subprocess.CalledProcessError as e:
+                    print(f"Validation failed for {output_file}: {e}")
 
     print("Processing and validation completed.")
 

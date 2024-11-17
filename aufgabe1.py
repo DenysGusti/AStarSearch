@@ -11,7 +11,7 @@ SolutionDict = dict[str, int | float | list[str] | dict[str, float]]
 def load_problem(filename: str) -> tuple[ProblemDict, HeuristicDict]:
     """Loads the YAML file and returns the problem details and heuristic information."""
     with open(filename, 'r') as file:
-        data = yaml.safe_load(file)
+        data = yaml.load(file, yaml.CSafeLoader)
 
     # Convert all cost values in connects_to to float
     for details in data['problem'].values():
@@ -29,7 +29,7 @@ def load_problem(filename: str) -> tuple[ProblemDict, HeuristicDict]:
 def save_solution(filename: str, solution: SolutionDict) -> None:
     """Saves the A* solution to a YAML file in the required format."""
     with open(filename, 'w') as file:
-        yaml.safe_dump({'solution': solution}, file)
+        yaml.dump({'solution': solution}, file, yaml.CSafeDumper)
 
 
 class AStarSearch:
