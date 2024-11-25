@@ -1,6 +1,6 @@
 solution:
   cost: 418.0
-  expanded_nodes: 6
+  expanded_nodes: 5
   heuristic:
     city_Arad: 366.0
     city_Bucharest: 0.0

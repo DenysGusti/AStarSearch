@@ -80,7 +80,6 @@ class AStarSearch:
 
         while frontier:
             current_cost, current_city = heapq.heappop(frontier)
-            explored.add(current_city)
             # print(f'{current_cost, current_city = }\n{frontier = }\n{explored = }\n{g_costs = }\n')
 
             # Check if goal reached
@@ -94,6 +93,8 @@ class AStarSearch:
                     'expanded_nodes': len(explored),
                     'heuristic': heuristic_output
                 }
+
+            explored.add(current_city)
 
             # Explore neighbours
             for neighbor, move_cost in self.connections[current_city].items():

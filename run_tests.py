@@ -2,9 +2,8 @@ from pathlib import Path
 import subprocess
 
 
-def run_and_validate_outputs(yaml_dir: str, script_name: str = "aufgabe1.py", validator_name: str | None = None
-                             # "test_output.py"
-                             ) -> None:
+def run_and_validate_outputs(yaml_dir: str, script_name: str = "aufgabe1.py",
+                             validator_name: str | None = "test_output.py") -> None:
     """
     Processes YAML files in a directory, organizes outputs, and validates results.
 
